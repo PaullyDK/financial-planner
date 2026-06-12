@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Financial Planner</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <h1>Financial Planner</h1>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <h2>Log in</h2>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn">Login</button>
+                <a href="register.html" class="btn register-btn">Register</a>
+            </div>
+        </form>
+        <p id="error-message" style="color: red; display: none;">Invalid email or password. Please try again.</p>
+    </main>
+<script>
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Get user input
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        try {
+            // Send login data to the server
+            console.log('Before fetch call');
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+                credentials: 'include' // Include cookies with the request
+            });
+            console.log('After fetch call, response.ok:', response.ok);
+            
+            if (response.ok) {
+                const data = await response.json();
+
+                // Redirect to the protected page
+                window.location.href = 'index.html';
+            } else {
+                // Show error message
+                document.getElementById('error-message').style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error logging in:', error);
+            document.getElementById('error-message').textContent = 'An error occurred. Please try again.';
+            document.getElementById('error-message').style.display = 'block';
+        }
+    });
+</script>
+</body>
+</html>

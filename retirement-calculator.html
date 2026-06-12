@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retirement Calculator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <h1>Financial Planner</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="#" id="logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="calculator">
+            <h2>Retirement Calculator</h2>
+            <p>Use this calculator to determine how much you need to invest to reach your retirement goals.</p>
+            <form id="retirement-form">
+                <div class="form-group">
+                    <label for="current-age">Current Age:</label>
+                    <input type="number" id="current-age" name="current-age" required step="0.00001">
+                </div>
+                <div class="form-group">
+                    <label for="retirement-age">Desired Retirement Age:</label>
+                    <input type="number" id="retirement-age" name="retirement-age" required step="0.00001">
+                </div>
+                <div class="form-group">
+                    <label for="monthly-savings">Monthly Savings ($):</label>
+                    <input type="number" id="monthly-savings" name="monthly-savings" required step="0.00001">
+                </div>
+                <div class="form-group">
+                    <label for="interest-rate">Expected Interest Rate (%):</label>
+                    <input type="number" id="interest-rate" name="interest-rate" required step="0.00001">
+                </div>
+                <button type="submit" class="btn">Calculate</button>
+            </form>
+            <div id="result" class="result">
+                <!-- Calculation results will be displayed here -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Financial Planner. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Ensure the user is logged in via session
+        async function checkSession() {
+            try {
+                const response = await fetch('/session', {
+                    credentials: 'include', // Include session cookies
+                });
+                if (!response.ok) {
+                    window.location.href = 'login.html'; // Redirect if session is invalid
+                }
+            } catch (error) {
+                console.error('Error checking session:', error);
+                window.location.href = 'login.html'; // Redirect on error
+            }
+        }
+
+        // Logout functionality
+        document.getElementById('logout').addEventListener('click', async function (e) {
+            e.preventDefault();
+            try {
+                const response = await fetch('/logout', {
+                    method: 'POST',
+                    credentials: 'include', // Include session cookies
+                });
+                if (response.ok) {
+                    window.location.href = 'login.html';
+                } else {
+                    alert('Logout failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error logging out:', error);
+            }
+        });
+
+        // Retirement Calculator Logic
+        document.getElementById('retirement-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Get input values
+            const currentAge = parseFloat(document.getElementById('current-age').value);
+            const retirementAge = parseFloat(document.getElementById('retirement-age').value);
+            const monthlySavings = parseFloat(document.getElementById('monthly-savings').value);
+            const interestRate = parseFloat(document.getElementById('interest-rate').value) / 100;
+
+            // Validate input values
+            if (currentAge < 0 || retirementAge <= currentAge || monthlySavings <= 0 || interestRate < 0) {
+                document.getElementById('result').innerHTML = `<p class="error">Please enter valid values. Ensure retirement age is greater than your current age.</p>`;
+                return;
+            }
+
+            // Calculate the total savings
+            const yearsToRetirement = retirementAge - currentAge;
+            const monthsToRetirement = yearsToRetirement * 12;
+			const futureValue = monthlySavings * (((Math.pow(1 + interestRate / 12, monthsToRetirement) - 1) / (interestRate / 12)));
+            // Display the result
+            document.getElementById('result').innerHTML = `<p>By the time you retire, you will have saved: <strong>$${futureValue.toFixed(2)}</strong></p>`;
+        });
+
+        // On page load, verify session
+        checkSession();
+    </script>
+</body>
+</html>

@@ -15,7 +15,7 @@ Login with guest username `guest@gmail.com` and password `guestaccount`
 
 ## How to download and run locally (MacOS):
 1. Requires node.js and MySQL.
-2. `npm install' in the root folder installs the rest of the dependencies.
+2. `npm install` in the root folder installs the rest of the dependencies.
 3. Then run `mysql -u root -p -e "CREATE DATABASE financial_planner;"` and `mysql -u root -p financial_planner < schema.sql1` to populate the database with the correct schema.
 4. Copy this into a file named `.env`. Replace the two bracketed values with your own, the rest are fine as-is for local development.
 ```sh

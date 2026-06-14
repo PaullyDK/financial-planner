@@ -29,6 +29,7 @@
                 <button type="submit" class="btn">Login</button>
                 <a href="register.html" class="btn register-btn">Register</a>
             </div>
+            <button type="button" id="guest-btn" class="btn" style="margin-top: 10px;">Try it as a guest</button>
         </form>
         <p id="error-message" style="color: red; display: none;">Invalid email or password. Please try again.</p>
     </main>
@@ -64,6 +65,27 @@
             console.error('Error logging in:', error);
             document.getElementById('error-message').textContent = 'An error occurred. Please try again.';
             document.getElementById('error-message').style.display = 'block';
+        }
+    });
+
+    document.getElementById('guest-btn').addEventListener('click', async function() {
+        const msg = document.getElementById('error-message');
+        try {
+            const response = await fetch('/guest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+            if (response.ok) {
+                window.location.href = 'index.html';
+            } else {
+                msg.textContent = 'Could not start a guest session. Please try again.';
+                msg.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error starting guest session:', error);
+            msg.textContent = 'An error occurred. Please try again.';
+            msg.style.display = 'block';
         }
     });
 </script>

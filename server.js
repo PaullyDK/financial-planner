@@ -407,6 +407,59 @@ app.put('/monthly-income', authenticate, (req, res) => {
     });
 });
 
+// Guest demo: create a throwaway, pre-seeded user and log in as them.
+// Each visitor gets their own data (no clobbering), and old guest accounts are pruned
+// so the table can't grow without bound. Guest accounts use the @demo.local domain.
+app.post('/guest', async (req, res) => {
+    const p = db.promise();
+    try {
+        // Keep only the 25 most recent guest accounts; older ones (and their budgets
+        // and transactions, via ON DELETE CASCADE) are removed.
+        await p.query(
+            `DELETE FROM users
+             WHERE email LIKE '%@demo.local'
+               AND id NOT IN (
+                 SELECT id FROM (
+                   SELECT id FROM users
+                   WHERE email LIKE '%@demo.local'
+                   ORDER BY id DESC
+                   LIMIT 25
+                 ) AS recent
+               )`
+        );
+
+        // Create a fresh guest user (random password; the visitor is logged in directly).
+        const email = `guest_${Date.now()}_${Math.random().toString(36).slice(2, 8)}@demo.local`;
+        const hashed = await bcrypt.hash(Math.random().toString(36), saltRounds);
+        const [user] = await p.query(
+            'INSERT INTO users (email, password, monthly_income) VALUES (?, ?, ?)',
+            [email, hashed, 4000]
+        );
+        const userId = user.insertId;
+
+        // Seed a few budgets, each with a sample transaction, so the demo isn't empty.
+        const seed = [['Groceries', 500], ['Rent', 1200], ['Entertainment', 150]];
+        for (const [category, amount] of seed) {
+            const [budget] = await p.query(
+                'INSERT INTO budgets (user_id, category, amount) VALUES (?, ?, ?)',
+                [userId, category, amount]
+            );
+            await p.query(
+                'INSERT INTO transactions (budget_id, title, amount) VALUES (?, ?, ?)',
+                [budget.insertId, `Sample ${category.toLowerCase()} expense`, Math.round(amount * 0.3 * 100) / 100]
+            );
+        }
+
+        // Log the visitor in as this guest.
+        req.session.userId = userId;
+        req.session.email = email;
+        res.status(200).json({ message: 'Guest session started' });
+    } catch (err) {
+        console.error('Error starting guest session:', err);
+        res.status(500).json({ error: 'Failed to start guest session' });
+    }
+});
+
 // Start Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

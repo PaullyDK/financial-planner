@@ -5,7 +5,7 @@ This project began as my university capstone, but recently I have made it live a
 
 Website is live here: https://financial-planner-production-e6cc.up.railway.app 
 
-Login with guest username `guest@gmail.com` and password `guestaccount`
+Click **Try it as a guest** on the login page for a pre-loaded demo account (no signup needed).
 
 ## Dashboard
 ![Dashboard](images/dashboard.png)
